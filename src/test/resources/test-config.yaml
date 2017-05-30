@@ -1,0 +1,15 @@
+beans:
+  - name: "java.lang:type=Threading"
+    attributes:
+    - name: peakThreadCount
+      type: GAUGE
+    - name: totalStartedThreadCount
+      type: GAUGE
+  - name: "com.jonnymatts:type=Blah"
+    attributes:
+    - name: histogram
+      type: HISTOGRAM
+    - name: counter
+      type: COUNTER
+    - name: summary
+      type: SUMMARY
