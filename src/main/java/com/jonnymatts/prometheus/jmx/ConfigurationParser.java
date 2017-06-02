@@ -2,10 +2,10 @@ package com.jonnymatts.prometheus.jmx;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class ConfigParser {
+public class ConfigurationParser {
     private final ObjectMapper objectMapper;
 
-    public ConfigParser(ObjectMapper objectMapper) {
+    public ConfigurationParser(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
@@ -13,7 +13,7 @@ public class ConfigParser {
         try {
             return objectMapper.readValue(configBody, Configuration.class);
         } catch (Exception e) {
-            throw new ConfigurationDeserializationException(configBody, e);
+            throw new ConfigurationParsingException(configBody, e);
         }
     }
 }

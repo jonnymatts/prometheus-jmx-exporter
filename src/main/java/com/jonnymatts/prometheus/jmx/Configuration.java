@@ -1,14 +1,35 @@
 package com.jonnymatts.prometheus.jmx;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.time.Duration;
 import java.util.List;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 public class Configuration {
+    public static final Duration DEFAULT_SCRAPE_INTERVAL = Duration.of(15, SECONDS);
+
+    @JsonProperty("scrapeIntervalInSeconds")
+    private Duration scrapeInterval;
     private List<Bean> beans;
 
-    public Configuration() {}
+    public Configuration() {
+        this.scrapeInterval = DEFAULT_SCRAPE_INTERVAL;
+    }
 
-    public Configuration(List<Bean> beans) {
+    public Configuration(Duration scrapeInterval, List<Bean> beans) {
+        this.scrapeInterval = scrapeInterval;
         this.beans = beans;
+    }
+
+    public Duration getScrapeInterval() {
+        return scrapeInterval;
+    }
+
+    public void setScrapeInterval(Duration scrapeInterval) {
+        if(scrapeInterval != null)
+            this.scrapeInterval = scrapeInterval;
     }
 
     public List<Bean> getBeans() {
@@ -26,11 +47,14 @@ public class Configuration {
 
         Configuration that = (Configuration) o;
 
-        return beans != null ? beans.equals(that.beans) : that.beans == null;
+        if (beans != null ? !beans.equals(that.beans) : that.beans != null) return false;
+        return scrapeInterval != null ? scrapeInterval.equals(that.scrapeInterval) : that.scrapeInterval == null;
     }
 
     @Override
     public int hashCode() {
-        return beans != null ? beans.hashCode() : 0;
+        int result = beans != null ? beans.hashCode() : 0;
+        result = 31 * result + (scrapeInterval != null ? scrapeInterval.hashCode() : 0);
+        return result;
     }
 }

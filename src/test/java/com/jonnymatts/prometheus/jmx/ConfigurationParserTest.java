@@ -14,7 +14,7 @@ import static org.hamcrest.CoreMatchers.isA;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ConfigParserTest {
+public class ConfigurationParserTest {
 
     private static final String CONFIG_BODY = "configBody";
 
@@ -23,18 +23,18 @@ public class ConfigParserTest {
     @Mock private ObjectMapper objectMapper;
     @Mock private Configuration configuration;
 
-    private ConfigParser configParser;
+    private ConfigurationParser configurationParser;
 
     @Before
     public void setUp() throws Exception {
-        configParser = new ConfigParser(objectMapper);
+        configurationParser = new ConfigurationParser(objectMapper);
     }
 
     @Test
     public void parseReturnsCorrectConfig() throws Exception {
         when(objectMapper.readValue(CONFIG_BODY, Configuration.class)).thenReturn(configuration);
 
-        final Configuration got = configParser.parse(CONFIG_BODY);
+        final Configuration got = configurationParser.parse(CONFIG_BODY);
 
         assertThat(got).isEqualTo(configuration);
     }
@@ -44,11 +44,11 @@ public class ConfigParserTest {
         final String errorMessage = "error!";
         when(objectMapper.readValue(CONFIG_BODY, Configuration.class)).thenThrow(new RuntimeException(errorMessage));
 
-        expectedException.expect(ConfigurationDeserializationException.class);
+        expectedException.expect(ConfigurationParsingException.class);
         expectedException.expectCause(isA(RuntimeException.class));
         expectedException.expectMessage("Could not");
         expectedException.expectMessage(CONFIG_BODY);
 
-        configParser.parse(CONFIG_BODY);
+        configurationParser.parse(CONFIG_BODY);
     }
 }

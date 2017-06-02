@@ -1,4 +1,3 @@
-scrapeIntervalInSeconds: 0.2
 beans:
   - name: "java.lang:type=Threading"
     attributes:
