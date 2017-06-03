@@ -11,47 +11,15 @@ import org.junit.Test;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
-import static com.jonnymatts.prometheus.jmx.MetricType.*;
+import static com.jonnymatts.prometheus.jmx.TestUtils.DEFAULT_BEANS;
 import static java.nio.charset.Charset.defaultCharset;
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ObjectMapperTest {
 
     private static final Configuration configuration = new Configuration(
             Duration.of(200, ChronoUnit.MILLIS),
-            asList(
-                    new Bean(
-                            "java.lang:type=Threading",
-                            asList(
-                                    new BeanAttribute(
-                                         "peakThreadCount",
-                                            GAUGE
-                                    ),
-                                    new BeanAttribute(
-                                         "totalStartedThreadCount",
-                                            GAUGE
-                                    )
-                            )
-                    ),
-                    new Bean(
-                            "com.jonnymatts:type=Blah",
-                            asList(
-                                    new BeanAttribute(
-                                            "histogram",
-                                            HISTOGRAM
-                                    ),
-                                    new BeanAttribute(
-                                            "counter",
-                                            COUNTER
-                                    ),
-                                    new BeanAttribute(
-                                            "summary",
-                                            SUMMARY
-                                    )
-                            )
-                    )
-            )
+            DEFAULT_BEANS
     );
 
     private ObjectMapper objectMapper;
