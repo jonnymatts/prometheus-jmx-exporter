@@ -1,4 +1,4 @@
-package com.jonnymatts.prometheus.jmx;
+package com.jonnymatts.prometheus.jmx.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;

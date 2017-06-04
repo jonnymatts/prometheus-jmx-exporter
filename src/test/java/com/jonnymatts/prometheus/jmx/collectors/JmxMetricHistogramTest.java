@@ -1,4 +1,4 @@
-package com.jonnymatts.prometheus.jmx;
+package com.jonnymatts.prometheus.jmx.collectors;
 
 import io.prometheus.client.Histogram;
 import io.prometheus.client.Histogram.Child;

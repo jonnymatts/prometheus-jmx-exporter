@@ -1,4 +1,4 @@
-package com.jonnymatts.prometheus.jmx;
+package com.jonnymatts.prometheus.jmx.configuration;
 
 import static java.lang.String.format;
 

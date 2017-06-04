@@ -1,9 +1,13 @@
-package com.jonnymatts.prometheus.jmx;
+package com.jonnymatts.prometheus.jmx.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ConfigurationParser {
     private final ObjectMapper objectMapper;
+
+    public ConfigurationParser() {
+        this.objectMapper = new PrometheusJmxExporterObjectMapper();
+    }
 
     public ConfigurationParser(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;

@@ -1,4 +1,4 @@
-package com.jonnymatts.prometheus.jmx;
+package com.jonnymatts.prometheus.jmx.collectors;
 
 import io.prometheus.client.Collector;
 import io.prometheus.client.Gauge;
@@ -6,7 +6,7 @@ import io.prometheus.client.Gauge.Child;
 
 import java.util.List;
 
-class JmxMetricGauge {
+public class JmxMetricGauge {
     private final Gauge gauge;
 
     public JmxMetricGauge() {

@@ -1,11 +1,11 @@
-package com.jonnymatts.prometheus.jmx;
+package com.jonnymatts.prometheus.jmx.collectors;
 
 import io.prometheus.client.Collector;
 import io.prometheus.client.Summary;
 
 import java.util.List;
 
-class JmxMetricSummary {
+public class JmxMetricSummary {
     private final Summary summary;
 
     public JmxMetricSummary() {

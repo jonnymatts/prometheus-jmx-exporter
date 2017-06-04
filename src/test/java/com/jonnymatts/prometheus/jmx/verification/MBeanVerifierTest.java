@@ -1,4 +1,4 @@
-package com.jonnymatts.prometheus.jmx;
+package com.jonnymatts.prometheus.jmx.verification;
 
 import org.junit.Before;
 import org.junit.Rule;

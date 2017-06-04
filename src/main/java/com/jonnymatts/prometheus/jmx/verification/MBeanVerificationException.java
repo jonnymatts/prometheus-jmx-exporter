@@ -1,4 +1,4 @@
-package com.jonnymatts.prometheus.jmx;
+package com.jonnymatts.prometheus.jmx.verification;
 
 public class MBeanVerificationException extends RuntimeException {
     public MBeanVerificationException(String message) {

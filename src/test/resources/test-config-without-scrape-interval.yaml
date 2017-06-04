@@ -2,14 +2,22 @@ beans:
   - name: "java.lang:type=Threading"
     attributes:
     - name: peakThreadCount
-      type: GAUGE
+      type: NUMBER
+      collector: GAUGE
     - name: totalStartedThreadCount
-      type: GAUGE
+      type: NUMBER
+      collector: GAUGE
   - name: "com.jonnymatts:type=Blah"
     attributes:
     - name: histogram
-      type: HISTOGRAM
+      type: NUMBER
+      collector: HISTOGRAM
     - name: counter
-      type: COUNTER
+      type: NUMBER
+      collector: COUNTER
     - name: summary
-      type: SUMMARY
+      type: NUMBER
+      collector: SUMMARY
+    - name: boolean
+      type: BOOLEAN
+      collector: GAUGE

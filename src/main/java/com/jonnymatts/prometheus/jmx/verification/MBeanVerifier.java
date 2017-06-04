@@ -1,6 +1,10 @@
-package com.jonnymatts.prometheus.jmx;
+package com.jonnymatts.prometheus.jmx.verification;
+
+import com.jonnymatts.prometheus.jmx.configuration.Bean;
+import com.jonnymatts.prometheus.jmx.configuration.BeanAttribute;
 
 import javax.management.*;
+import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.Set;
 
@@ -10,6 +14,10 @@ import static java.util.stream.Collectors.toList;
 
 public class MBeanVerifier {
     private final MBeanServer mBeanServer;
+
+    public MBeanVerifier() {
+        this.mBeanServer = ManagementFactory.getPlatformMBeanServer();
+    }
 
     public MBeanVerifier(MBeanServer mBeanServer) {
         this.mBeanServer = mBeanServer;

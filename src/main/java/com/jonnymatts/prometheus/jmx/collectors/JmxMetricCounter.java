@@ -1,4 +1,4 @@
-package com.jonnymatts.prometheus.jmx;
+package com.jonnymatts.prometheus.jmx.collectors;
 
 import io.prometheus.client.Collector;
 import io.prometheus.client.Counter;
@@ -6,7 +6,7 @@ import io.prometheus.client.Counter.Child;
 
 import java.util.List;
 
-class JmxMetricCounter {
+public class JmxMetricCounter {
     private final Counter counter;
 
     public JmxMetricCounter() {
