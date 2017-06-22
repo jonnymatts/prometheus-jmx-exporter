@@ -12,7 +12,7 @@ import org.junit.Test;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
-import static com.jonnymatts.prometheus.jmx.TestUtils.DEFAULT_BEANS;
+import static com.jonnymatts.prometheus.jmx.TestUtils.*;
 import static java.nio.charset.Charset.defaultCharset;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,6 +20,8 @@ public class ObjectMapperTest {
 
     private static final Configuration configuration = new Configuration(
             Duration.of(200, ChronoUnit.MILLIS),
+            DEFAULT_HISTOGRAMS,
+            DEFAULT_SUMMARIES,
             DEFAULT_BEANS
     );
 

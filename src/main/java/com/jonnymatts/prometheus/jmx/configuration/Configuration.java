@@ -1,6 +1,8 @@
 package com.jonnymatts.prometheus.jmx.configuration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.jonnymatts.prometheus.jmx.collectors.HistogramMetricConfiguration;
+import com.jonnymatts.prometheus.jmx.collectors.SummaryMetricConfiguration;
 
 import java.time.Duration;
 import java.util.List;
@@ -12,14 +14,21 @@ public class Configuration {
 
     @JsonProperty("scrapeIntervalInSeconds")
     private Duration scrapeInterval;
+    private List<HistogramMetricConfiguration> histograms;
+    private List<SummaryMetricConfiguration> summaries;
     private List<Bean> beans;
 
     public Configuration() {
         this.scrapeInterval = DEFAULT_SCRAPE_INTERVAL;
     }
 
-    public Configuration(Duration scrapeInterval, List<Bean> beans) {
+    public Configuration(Duration scrapeInterval,
+                         List<HistogramMetricConfiguration> histograms,
+                         List<SummaryMetricConfiguration> summaries,
+                         List<Bean> beans) {
         this.scrapeInterval = scrapeInterval;
+        this.histograms = histograms;
+        this.summaries = summaries;
         this.beans = beans;
     }
 
@@ -30,6 +39,22 @@ public class Configuration {
     public void setScrapeInterval(Duration scrapeInterval) {
         if(scrapeInterval != null)
             this.scrapeInterval = scrapeInterval;
+    }
+
+    public List<HistogramMetricConfiguration> getHistograms() {
+        return histograms;
+    }
+
+    public void setHistograms(List<HistogramMetricConfiguration> histograms) {
+        this.histograms = histograms;
+    }
+
+    public List<SummaryMetricConfiguration> getSummaries() {
+        return summaries;
+    }
+
+    public void setSummaries(List<SummaryMetricConfiguration> summaries) {
+        this.summaries = summaries;
     }
 
     public List<Bean> getBeans() {
@@ -47,14 +72,19 @@ public class Configuration {
 
         Configuration that = (Configuration) o;
 
-        if (beans != null ? !beans.equals(that.beans) : that.beans != null) return false;
-        return scrapeInterval != null ? scrapeInterval.equals(that.scrapeInterval) : that.scrapeInterval == null;
+        if (scrapeInterval != null ? !scrapeInterval.equals(that.scrapeInterval) : that.scrapeInterval != null)
+            return false;
+        if (histograms != null ? !histograms.equals(that.histograms) : that.histograms != null) return false;
+        if (summaries != null ? !summaries.equals(that.summaries) : that.summaries != null) return false;
+        return beans != null ? beans.equals(that.beans) : that.beans == null;
     }
 
     @Override
     public int hashCode() {
-        int result = beans != null ? beans.hashCode() : 0;
-        result = 31 * result + (scrapeInterval != null ? scrapeInterval.hashCode() : 0);
+        int result = scrapeInterval != null ? scrapeInterval.hashCode() : 0;
+        result = 31 * result + (histograms != null ? histograms.hashCode() : 0);
+        result = 31 * result + (summaries != null ? summaries.hashCode() : 0);
+        result = 31 * result + (beans != null ? beans.hashCode() : 0);
         return result;
     }
 }

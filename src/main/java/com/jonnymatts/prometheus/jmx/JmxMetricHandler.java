@@ -1,64 +1,71 @@
 package com.jonnymatts.prometheus.jmx;
 
-import com.jonnymatts.prometheus.jmx.collectors.*;
+import com.jonnymatts.prometheus.jmx.collectors.JmxMetricCollectorProvider;
+import com.jonnymatts.prometheus.jmx.collectors.JmxMetricHistogram;
+import com.jonnymatts.prometheus.jmx.collectors.JmxMetricSummary;
 import com.jonnymatts.prometheus.jmx.configuration.Bean;
 import com.jonnymatts.prometheus.jmx.configuration.BeanAttribute;
+import com.jonnymatts.prometheus.jmx.configuration.BeanAttributeMetricCollectorReference;
+import com.jonnymatts.prometheus.jmx.observing.*;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 public class JmxMetricHandler {
 
     private final MBeanServer mBeanServer;
-    private final Supplier<JmxMetricCounter> counterSupplier;
-    private final Supplier<JmxMetricGauge> gaugeSupplier;
-    private final Supplier<JmxMetricHistogram> histogramSupplier;
-    private final Supplier<JmxMetricSummary> summarySupplier;
+    private final JmxMetricCollectorProvider jmxMetricCollectorProvider;
+    private final ArrayList<JmxMetricCollector> collectors;
 
-    public JmxMetricHandler() {
-        this.mBeanServer = ManagementFactory.getPlatformMBeanServer();
-        this.counterSupplier = JmxMetricCollectors::counter;
-        this.gaugeSupplier = JmxMetricCollectors::gauge;
-        this.histogramSupplier = JmxMetricCollectors::histogram;
-        this.summarySupplier = JmxMetricCollectors::summary;
+    public JmxMetricHandler(JmxMetricCollectorProvider jmxMetricCollectorProvider) {
+        this(ManagementFactory.getPlatformMBeanServer(), jmxMetricCollectorProvider, new ArrayList<>());
     }
 
     public JmxMetricHandler(MBeanServer mBeanServer,
-                            Supplier<JmxMetricCounter> counterSupplier,
-                            Supplier<JmxMetricGauge> gaugeSupplier,
-                            Supplier<JmxMetricHistogram> histogramSupplier,
-                            Supplier<JmxMetricSummary> summarySupplier) {
-
+                            JmxMetricCollectorProvider jmxMetricCollectorProvider,
+                            ArrayList<JmxMetricCollector> collectors) {
         this.mBeanServer = mBeanServer;
-        this.counterSupplier = counterSupplier;
-        this.gaugeSupplier = gaugeSupplier;
-        this.histogramSupplier = histogramSupplier;
-        this.summarySupplier = summarySupplier;
+        this.jmxMetricCollectorProvider = jmxMetricCollectorProvider;
+        this.collectors = collectors;
     }
 
-    public void handle(List<Bean> beans) {
-        beans.forEach(bean -> {
-            final List<BeanAttribute> attributes = bean.getAttributes();
-            attributes.forEach(attribute -> {
-                double observedValue = getObservedValue(bean, attribute);
-                switch (attribute.getCollector()) {
-                    case COUNTER:
-                        handleCounterMetric(bean, attribute, observedValue);
-                        break;
-                    case GAUGE:
-                        handleGaugeMetric(bean, attribute, observedValue);
-                        break;
-                    case HISTOGRAM:
-                        handleHistogramMetric(bean, attribute, observedValue);
-                        break;
-                    case SUMMARY:
-                        handleSummaryMetric(bean, attribute, observedValue);
-                        break;
-                }
-            });
+    public void register(List<Bean> beans) {
+        beans.forEach(this::registerMetricCollectorsForBean);
+    }
+
+    private void registerMetricCollectorsForBean(Bean bean) {
+        final List<BeanAttribute> attributes = bean.getAttributes();
+        attributes.forEach(attribute -> registerMetricCollectorsForBean(bean, attribute));
+    }
+
+    private void registerMetricCollectorsForBean(Bean bean, BeanAttribute attribute) {
+        final ObservedMetricHandler observedMetricHandler = getObservedMetricHandler(bean.getName(), attribute);
+        collectors.add(new JmxMetricCollector(bean, attribute, observedMetricHandler));
+    }
+
+    private ObservedMetricHandler getObservedMetricHandler(String beanName, BeanAttribute attribute) {
+        final BeanAttributeMetricCollectorReference reference = attribute.getCollectorReference();
+        switch (reference.getType()) {
+            case COUNTER:
+                return new CounterObservedMetricHandler(beanName, attribute.getName(), jmxMetricCollectorProvider.counter());
+            case GAUGE:
+                return new GaugeObservedMetricHandler(beanName, attribute.getName(), jmxMetricCollectorProvider.gauge());
+            case HISTOGRAM:
+                final JmxMetricHistogram histogram = reference.getName() == null ? jmxMetricCollectorProvider.histogram() : jmxMetricCollectorProvider.histogram(reference.getName());
+                return new HistogramObservedMetricHandler(beanName, attribute.getName(), histogram);
+            default:
+                final JmxMetricSummary summary = reference.getName() == null ? jmxMetricCollectorProvider.summary() : jmxMetricCollectorProvider.summary(reference.getName());
+                return new SummaryObservedMetricHandler(beanName, attribute.getName(), summary);
+        }
+    }
+
+    public void handle() {
+        collectors.forEach(collector -> {
+            final double observedValue = getObservedValue(collector.getBean(), collector.getAttribute());
+            collector.getConsumer().accept(observedValue);
         });
     }
 
@@ -74,26 +81,5 @@ public class JmxMetricHandler {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private void handleCounterMetric(Bean bean, BeanAttribute attribute, double observedValue) {
-        final JmxMetricCounter jmxMetricCounter = counterSupplier.get();
-        final double valueToIncreaseBy = observedValue - jmxMetricCounter.get(bean.getName(), attribute.getName());
-        jmxMetricCounter.inc(bean.getName(), attribute.getName(), valueToIncreaseBy);
-    }
-
-    private void handleGaugeMetric(Bean bean, BeanAttribute attribute, double observedValue) {
-        final JmxMetricGauge jmxMetricGauge = gaugeSupplier.get();
-        jmxMetricGauge.set(bean.getName(), attribute.getName(), observedValue);
-    }
-
-    private void handleHistogramMetric(Bean bean, BeanAttribute attribute, double observedValue) {
-        final JmxMetricHistogram jmxMetricHistogram = histogramSupplier.get();
-        jmxMetricHistogram.observe(bean.getName(), attribute.getName(), observedValue);
-    }
-
-    private void handleSummaryMetric(Bean bean, BeanAttribute attribute, double observedValue) {
-        final JmxMetricSummary jmxMetricSummary = summarySupplier.get();
-        jmxMetricSummary.observe(bean.getName(), attribute.getName(), observedValue);
     }
 }

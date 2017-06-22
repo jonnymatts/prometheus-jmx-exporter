@@ -15,7 +15,7 @@ public class HandleMetricsRunner implements Runnable {
 
     @Override
     public void run() {
-        metricHandler.handle(beans);
+        metricHandler.handle();
     }
 
     @Override

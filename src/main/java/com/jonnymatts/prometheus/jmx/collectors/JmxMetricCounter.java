@@ -14,8 +14,7 @@ public class JmxMetricCounter {
                 .name("jmx_metric_counter")
                 .help("JMX metrics backed by a counter")
                 .labelNames("bean_name", "attribute_name")
-                .create()
-                .register();
+                .create();
     }
 
     public JmxMetricCounter(Counter counter) {
@@ -44,5 +43,10 @@ public class JmxMetricCounter {
 
     public List<Collector.MetricFamilySamples> describe() {
         return counter.describe();
+    }
+
+    public JmxMetricCounter register() {
+        counter.register();
+        return this;
     }
 }

@@ -1,24 +1,61 @@
 scrapeIntervalInSeconds: 0.2
+histograms:
+- name: histogram1
+  buckets:
+  - 0.001
+  - 0.01
+  - 0.1
+  - 1
+  exponentialBuckets:
+    start: 0.001
+    factor: 10
+    count: 5
+  linearBuckets:
+    start: 0.001
+    width: 10
+    count: 5
+summaries:
+- name: summary1
+  quantiles:
+  - quantile: 0.001
+    error: 1
+  - quantile: 0.01
+    error: 2
+  - quantile: 0.1
+    error: 3
+  - quantile: 1
+    error: 4
+  maxAgeSeconds: 100
+  ageBuckets: 10
+
 beans:
-  - name: "java.lang:type=Threading"
-    attributes:
-    - name: peakThreadCount
-      type: NUMBER
-      collector: GAUGE
-    - name: totalStartedThreadCount
-      type: NUMBER
-      collector: GAUGE
-  - name: "com.jonnymatts:type=Blah"
-    attributes:
-    - name: histogram
-      type: NUMBER
-      collector: HISTOGRAM
-    - name: counter
-      type: NUMBER
-      collector: COUNTER
-    - name: summary
-      type: NUMBER
-      collector: SUMMARY
-    - name: boolean
-      type: BOOLEAN
-      collector: GAUGE
+- name: "java.lang:type=Threading"
+  attributes:
+  - name: peakThreadCount
+    type: NUMBER
+    collector:
+      type: GAUGE
+  - name: totalStartedThreadCount
+    type: NUMBER
+    collector:
+      type: GAUGE
+- name: "com.jonnymatts:type=Blah"
+  attributes:
+  - name: histogram
+    type: NUMBER
+    collector:
+      type: HISTOGRAM
+      name: histogram1
+  - name: counter
+    type: NUMBER
+    collector:
+      type: COUNTER
+  - name: summary
+    type: NUMBER
+    collector:
+      type: SUMMARY
+      name: summary1
+  - name: boolean
+    type: BOOLEAN
+    collector:
+      type: GAUGE

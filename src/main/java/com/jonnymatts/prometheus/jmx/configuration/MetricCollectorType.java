@@ -1,5 +1,5 @@
 package com.jonnymatts.prometheus.jmx.configuration;
 
-public enum MetricCollector {
+public enum MetricCollectorType {
     COUNTER, GAUGE, SUMMARY, HISTOGRAM
 }

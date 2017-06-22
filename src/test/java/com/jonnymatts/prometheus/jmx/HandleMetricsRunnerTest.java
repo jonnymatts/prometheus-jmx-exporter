@@ -25,6 +25,6 @@ public class HandleMetricsRunnerTest {
     public void runCallsMetricHandlerWithBeans() throws Exception {
         handleMetricsRunner.run();
 
-        verify(jmxMetricHandler).handle(DEFAULT_BEANS);
+        verify(jmxMetricHandler).handle();
     }
 }

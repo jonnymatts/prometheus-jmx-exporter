@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -27,6 +28,15 @@ public class JmxMetricGaugeTest {
         jmxMetricGauge = new JmxMetricGauge(gauge);
 
         when(jmxMetricGauge.labels(BEAN_NAME, ATTRIBUTE_NAME)).thenReturn(gaugeChild);
+    }
+
+    @Test
+    public void registerCallsRegister() throws Exception {
+        final JmxMetricGauge got = jmxMetricGauge.register();
+
+        assertThat(got).isEqualTo(jmxMetricGauge);
+
+        verify(gauge).register();
     }
 
     @Test

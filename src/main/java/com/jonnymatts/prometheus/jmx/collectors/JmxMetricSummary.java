@@ -1,7 +1,9 @@
 package com.jonnymatts.prometheus.jmx.collectors;
 
+import com.jonnymatts.prometheus.jmx.configuration.QuantileConfiguration;
 import io.prometheus.client.Collector;
 import io.prometheus.client.Summary;
+import io.prometheus.client.Summary.Builder;
 
 import java.util.List;
 
@@ -9,12 +11,41 @@ public class JmxMetricSummary {
     private final Summary summary;
 
     public JmxMetricSummary() {
-        this.summary = Summary.build()
-                .name("jmx_metric_summary")
+        this(new SummaryMetricConfiguration(null, null, null, null));
+    }
+
+    public JmxMetricSummary(SummaryMetricConfiguration configuration) {
+        this(Summary.build(), configuration);
+    }
+
+    public JmxMetricSummary(Builder builder,
+                            SummaryMetricConfiguration configuration) {
+
+        final String summaryBaseName = "jmx_metric_summary";
+        final String summaryName = configuration.getName() != null ?
+                summaryBaseName + "_" + configuration.getName() :
+                summaryBaseName;
+
+        builder.name(summaryName)
                 .help("JMX metrics backed by a summary")
-                .labelNames("bean_name", "attribute_name")
-                .create()
-                .register();
+                .labelNames("bean_name", "attribute_name");
+
+        final List<QuantileConfiguration> quantiles = configuration.getQuantiles();
+        if(quantiles != null) {
+            quantiles.forEach(q -> builder.quantile(q.getQuantile(), q.getError()));
+        }
+
+        final Integer ageBuckets = configuration.getAgeBuckets();
+        if(ageBuckets != null) {
+            builder.ageBuckets(ageBuckets);
+        }
+
+        final Long maxAgesSeconds = configuration.getMaxAgeSeconds();
+        if(maxAgesSeconds != null) {
+            builder.maxAgeSeconds(maxAgesSeconds);
+        }
+
+        this.summary = builder.create();
     }
 
     public JmxMetricSummary(Summary summary) {
@@ -43,5 +74,25 @@ public class JmxMetricSummary {
 
     public List<Collector.MetricFamilySamples> describe() {
         return summary.describe();
+    }
+
+    public JmxMetricSummary register() {
+        summary.register();
+        return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        JmxMetricSummary that = (JmxMetricSummary) o;
+
+        return summary != null ? summary.equals(that.summary) : that.summary == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return summary != null ? summary.hashCode() : 0;
     }
 }

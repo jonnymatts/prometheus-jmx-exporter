@@ -1,8 +1,9 @@
 package com.jonnymatts.prometheus.jmx;
 
+import com.jonnymatts.prometheus.jmx.collectors.JmxMetricCollectorProvider;
 import com.jonnymatts.prometheus.jmx.configuration.Configuration;
 import com.jonnymatts.prometheus.jmx.configuration.ConfigurationParser;
-import com.jonnymatts.prometheus.jmx.verification.MBeanVerifier;
+import com.jonnymatts.prometheus.jmx.verification.ConfigurationVerifier;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,8 +31,9 @@ public class JmxExporterTest {
     @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Mock private ConfigurationParser parser;
-    @Mock private MBeanVerifier verifier;
+    @Mock private ConfigurationVerifier verifier;
     @Mock private JmxMetricHandler metricHandler;
+    @Mock private JmxMetricCollectorProvider metricCollectorProvider;
     @Mock private ScheduledExecutorService scheduledExecutorService;
 
     @Mock private Configuration configuration;
@@ -46,7 +48,7 @@ public class JmxExporterTest {
         when(configuration.getBeans()).thenReturn(DEFAULT_BEANS);
         when(configuration.getScrapeInterval()).thenReturn(SCRAPE_INTERVAL);
 
-        jmxExporter = new JmxExporter(parser, verifier, metricHandler, scheduledExecutorService);
+        jmxExporter = new JmxExporter(parser, verifier, metricHandler, metricCollectorProvider, scheduledExecutorService);
 
         configFile = temporaryFolder.newFile("config.yaml");
 
@@ -59,8 +61,9 @@ public class JmxExporterTest {
     public void register() throws Exception {
         jmxExporter.register(configFile.getAbsolutePath());
 
-        DEFAULT_BEANS.forEach(bean -> verify(verifier).verify(bean));
-
+        verify(verifier).verify(configuration);
+        verify(metricCollectorProvider).createCollectors(configuration);
+        verify(metricHandler).register(DEFAULT_BEANS);
         verify(scheduledExecutorService).scheduleAtFixedRate(new HandleMetricsRunner(metricHandler, DEFAULT_BEANS), 0, 1_000_000_000, TimeUnit.NANOSECONDS);
     }
 }

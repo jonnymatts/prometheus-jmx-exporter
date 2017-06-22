@@ -1,16 +1,19 @@
 package com.jonnymatts.prometheus.jmx.configuration;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class BeanAttribute {
     private String name;
     private MetricType type;
-    private MetricCollector collector;
+    @JsonProperty("collector")
+    private BeanAttributeMetricCollectorReference collectorReference;
 
     public BeanAttribute() {}
 
-    public BeanAttribute(String name, MetricType type, MetricCollector collector) {
+    public BeanAttribute(String name, MetricType type, BeanAttributeMetricCollectorReference collectorReference) {
         this.name = name;
         this.type = type;
-        this.collector = collector;
+        this.collectorReference = collectorReference;
     }
 
     public String getName() {
@@ -29,12 +32,12 @@ public class BeanAttribute {
         this.type = type;
     }
 
-    public MetricCollector getCollector() {
-        return collector;
+    public BeanAttributeMetricCollectorReference getCollectorReference() {
+        return collectorReference;
     }
 
-    public void setCollector(MetricCollector collector) {
-        this.collector = collector;
+    public void setCollectorReference(BeanAttributeMetricCollectorReference collectorReference) {
+        this.collectorReference = collectorReference;
     }
 
     @Override
@@ -46,14 +49,14 @@ public class BeanAttribute {
 
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (type != that.type) return false;
-        return collector == that.collector;
+        return collectorReference != null ? collectorReference.equals(that.collectorReference) : that.collectorReference == null;
     }
 
     @Override
     public int hashCode() {
         int result = name != null ? name.hashCode() : 0;
         result = 31 * result + (type != null ? type.hashCode() : 0);
-        result = 31 * result + (collector != null ? collector.hashCode() : 0);
+        result = 31 * result + (collectorReference != null ? collectorReference.hashCode() : 0);
         return result;
     }
 }

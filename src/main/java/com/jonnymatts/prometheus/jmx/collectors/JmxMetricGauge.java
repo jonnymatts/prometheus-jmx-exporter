@@ -14,8 +14,7 @@ public class JmxMetricGauge {
                 .name("jmx_metric_gauge")
                 .help("JMX metrics backed by a gauge")
                 .labelNames("bean_name", "attribute_name")
-                .create()
-                .register();
+                .create();
     }
 
     public JmxMetricGauge(Gauge gauge) {
@@ -52,5 +51,10 @@ public class JmxMetricGauge {
 
     public List<Collector.MetricFamilySamples> describe() {
         return gauge.describe();
+    }
+
+    public JmxMetricGauge register() {
+        gauge.register();
+        return this;
     }
 }

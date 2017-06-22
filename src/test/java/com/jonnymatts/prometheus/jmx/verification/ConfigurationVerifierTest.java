@@ -1,5 +1,9 @@
 package com.jonnymatts.prometheus.jmx.verification;
 
+import com.jonnymatts.prometheus.jmx.configuration.Bean;
+import com.jonnymatts.prometheus.jmx.configuration.BeanAttribute;
+import com.jonnymatts.prometheus.jmx.configuration.BeanAttributeMetricCollectorReference;
+import com.jonnymatts.prometheus.jmx.configuration.Configuration;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,6 +16,9 @@ import javax.management.*;
 import java.util.stream.Stream;
 
 import static com.jonnymatts.prometheus.jmx.TestUtils.DEFAULT_BEANS;
+import static com.jonnymatts.prometheus.jmx.configuration.MetricCollectorType.HISTOGRAM;
+import static com.jonnymatts.prometheus.jmx.configuration.MetricCollectorType.SUMMARY;
+import static com.jonnymatts.prometheus.jmx.configuration.MetricType.NUMBER;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.util.Sets.newHashSet;
@@ -19,21 +26,23 @@ import static org.hamcrest.CoreMatchers.isA;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MBeanVerifierTest {
+public class ConfigurationVerifierTest {
 
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
     @Mock private MBeanServer mBeanServer;
+    @Mock private Configuration configuration;
     @Mock private MBeanInfo threadingMBeanInfo;
     @Mock private MBeanAttributeInfo peakThreadCountMBeanAttributeInfo;
     @Mock private MBeanAttributeInfo totalStartedThreadCountMBeanAttributeInfo;
 
-    private MBeanVerifier mBeanVerifier;
+    private ConfigurationVerifier configurationVerifier;
 
     @Before
     public void setUp() throws Exception {
-        mBeanVerifier = new MBeanVerifier(mBeanServer);
+        configurationVerifier = new ConfigurationVerifier(mBeanServer);
 
+        when(configuration.getBeans()).thenReturn(singletonList(DEFAULT_BEANS.get(0)));
         when(mBeanServer.queryMBeans(null, null)).thenReturn(newHashSet(singletonList(
                 new ObjectInstance("java.lang:type=Threading", "sun.management.ThreadImpl")
         )));
@@ -55,7 +64,7 @@ public class MBeanVerifierTest {
         expectedException.expectMessage("not exist");
         expectedException.expectMessage("Threading");
 
-        mBeanVerifier.verify(DEFAULT_BEANS.get(0));
+        configurationVerifier.verify(configuration);
     }
 
     @Test
@@ -71,7 +80,7 @@ public class MBeanVerifierTest {
         expectedException.expectMessage("Threading");
         expectedException.expectMessage("totalStartedThreadCount");
 
-        mBeanVerifier.verify(DEFAULT_BEANS.get(0));
+        configurationVerifier.verify(configuration);
     }
 
     @Test
@@ -82,11 +91,45 @@ public class MBeanVerifierTest {
         expectedException.expectCause(isA(RuntimeException.class));
         expectedException.expectMessage("Exception occurred");
 
-        mBeanVerifier.verify(DEFAULT_BEANS.get(0));
+        configurationVerifier.verify(configuration);
     }
 
     @Test
     public void verifyDoesNotThrowExceptionIfMBeanAndItsAttributesSpecifiedInConfigurationExist() throws Exception {
-        mBeanVerifier.verify(DEFAULT_BEANS.get(0));
+        configurationVerifier.verify(configuration);
+    }
+
+    @Test
+    public void verifyThrowsExceptionIfHistogramMetricCollectorReferencedDoesNotExist() throws Exception {
+        final Bean bean = new Bean("java.lang:type=Threading", singletonList(
+                new BeanAttribute(
+                        "peakThreadCount",
+                        NUMBER,
+                        new BeanAttributeMetricCollectorReference(HISTOGRAM, "histogram1")
+                )
+        ));
+        when(configuration.getBeans()).thenReturn(singletonList(bean));
+
+        expectedException.expect(MetricCollectorDoesNotExistException.class);
+        expectedException.expectMessage("histogram1");
+
+        configurationVerifier.verify(configuration);
+    }
+
+    @Test
+    public void verifyThrowsExceptionIfSummaryMetricCollectorReferencedDoesNotExist() throws Exception {
+        final Bean bean = new Bean("java.lang:type=Threading", singletonList(
+                new BeanAttribute(
+                        "peakThreadCount",
+                        NUMBER,
+                        new BeanAttributeMetricCollectorReference(SUMMARY, "summary1")
+                )
+        ));
+        when(configuration.getBeans()).thenReturn(singletonList(bean));
+
+        expectedException.expect(MetricCollectorDoesNotExistException.class);
+        expectedException.expectMessage("summary1");
+
+        configurationVerifier.verify(configuration);
     }
 }

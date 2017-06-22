@@ -33,6 +33,15 @@ public class JmxMetricCounterTest {
     }
 
     @Test
+    public void registerCallsRegister() throws Exception {
+        final JmxMetricCounter got = jmxMetricCounter.register();
+
+        assertThat(got).isEqualTo(jmxMetricCounter);
+
+        verify(counter).register();
+    }
+
+    @Test
     public void incCallsIncWithTheCorrectLabels() throws Exception {
         jmxMetricCounter.inc(BEAN_NAME, ATTRIBUTE_NAME);
 
